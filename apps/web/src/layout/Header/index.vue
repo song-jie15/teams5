@@ -41,7 +41,7 @@
                 </el-popover>
                 <div v-else class="flex items-center gap-2 cursor-pointer" @click="login">
                     <img class="w-10 h-10 rounded-full"
-                        src="https://gips3.baidu.com/it/u=3493347002,3356558679&fm=3074&app=3074&f=PNG?w=2048&h=2048" />
+                        :src="avatar" />
                     <span class="text-sm font-bold">未登录</span>
                 </div>
             </div>
@@ -56,6 +56,7 @@ import { ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { useLogin } from '@/hooks/useLogin';
+import avatar from '@/assets/images/avatar/default.png'
 const router = useRouter()
 const authStore = useAuthStore()
 const { login } = useLogin()
