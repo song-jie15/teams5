@@ -5,7 +5,7 @@ export const Config = {
         web:8080, // 前端端口
     },
     jwt: {
-        secret: process.env.JWT_SECRET || 'en-secret-key-2024',
-        expiresIn: 604800, // 7 days in seconds
-    }
+    secret: 'test_secret_key_123', 
+    expiresIn: '30d',
+  },
 }

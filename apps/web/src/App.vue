@@ -4,9 +4,10 @@
     <Login />
     <Search />
   </div>
+  <RouterView />
 </template>
 
-<script setup >
+<script setup lang="ts">
 import { RouterView } from 'vue-router'
 import Login from './components/Login/index.vue'
 import { provide, ref, onMounted, onUnmounted } from 'vue';
@@ -28,4 +29,5 @@ onUnmounted(() => {
   window.removeEventListener('auth:unauthorized', handleAuthEvent)
   window.removeEventListener('auth:login-required', handleAuthEvent)
 })
+</script>
 </script>
