@@ -2,6 +2,7 @@
   <div>
     <RouterView />
     <Login />
+    <Search />
   </div>
 </template>
 
@@ -10,6 +11,7 @@ import { RouterView } from 'vue-router'
 import Login from './components/Login/index.vue'
 import { provide, ref, onMounted, onUnmounted } from 'vue';
 import { IS_SHOW_LOGIN } from './components/Login/type';
+import Search from './components/Search/index.vue'
 const isShowLogin = ref(false)
 provide(IS_SHOW_LOGIN, isShowLogin)
 
