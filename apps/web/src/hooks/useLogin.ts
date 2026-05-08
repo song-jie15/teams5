@@ -1,5 +1,7 @@
 import { IS_SHOW_LOGIN } from "@/components/Login/type";
 import { inject,ref } from "vue";
+import { useAuthStore } from "@/stores/auth";
+import { useUserStore } from "@/stores/user";
 export const useLogin = ()=>{
     const isShowLogin = inject(IS_SHOW_LOGIN,ref(false))
     const login = () =>{
@@ -7,6 +9,8 @@ export const useLogin = ()=>{
 
     }
     const logout = () => {
+        useAuthStore().logout()
+        useUserStore().logout()
         isShowLogin.value = false
     }
     return {login,logout}

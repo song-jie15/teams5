@@ -8,7 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { Prisma } from '@libs/shared/generated/prisma/client';
 import type { UserLogin, UserRegister, UserUpdate, Token, AvatarResult } from '@en/common/user';
-
+import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class UserService {
   constructor(
@@ -16,6 +16,7 @@ export class UserService {
     private readonly response: ResponseService,
     private readonly jwtService: JwtService,
     private readonly minioService: MinioService,
+    private readonly configService: ConfigService,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
@@ -108,7 +109,7 @@ export class UserService {
       throw error;
     }
   }
-
+           
   async refreshToken(dto: Omit<Token, 'accessToken'>) {
     try {
       const payload = this.jwtService.verify<{ sub: string; phone: string }>(dto.refreshToken);
@@ -124,13 +125,29 @@ export class UserService {
   }
 
   async uploadAvatar(file: Express.Multer.File) {
+    if (!file) {
+      return this.response.error(null, '文件不存在');
+    }
+    if (file.size > 1024 * 1024 * 5) {
+      return this.response.error(null, '文件大小不能超过5MB');
+    }
+    if (!file.mimetype.includes('image')) {
+      return this.response.error(null, '文件类型不支持');
+    }
     const bucket = this.minioService.getBucket();
     const ext = file.originalname.split('.').pop();
     const objectName = `avatar/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-    await this.minioService.getClient().putObject(bucket, objectName, file.buffer);
+    await this.minioService.getClient().putObject(bucket, objectName, file.buffer, file.size, {
+      'Content-Type': file.mimetype,
+    });
+    const isHttps = !!Number(this.configService.get('MINIO_USE_SSL'));
+    const protocol = isHttps ? 'https' : 'http';
+    const endpoint = this.configService.get('MINIO_ENDPOINT');
+    const port = this.configService.get('MINIO_PORT');
+    const previewUrl = `${protocol}://${endpoint}:${port}/${bucket}/${objectName}`;
     const result: AvatarResult = {
-      previewUrl: `/${bucket}/${objectName}`,
-      databaseUrl: objectName,
+      previewUrl,
+      databaseUrl: previewUrl,
     };
     return this.response.success(result);
   }

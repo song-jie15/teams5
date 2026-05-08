@@ -70,13 +70,10 @@ watch(() => router.currentRoute.value, (newVal) => {
 
 const gotoPath = async (path: string) => {
     const isAuth = routes.find(route => route.path === path)?.isAuth ?? false
-    if(isAuth) {
-        await login()
-        if(userStore.getUser) {
-            router.push(path)
-        }
-    }else{
-        router.push(path)
+    if (isAuth && !userStore.getUser) {
+        login()
+        return
     }
+    router.push(path)
 }
 </script>

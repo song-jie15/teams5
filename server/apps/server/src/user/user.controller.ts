@@ -5,6 +5,7 @@ import type { UserLogin, UserRegister, Token, UserUpdate } from '@en/common/user
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '@libs/shared/auth/auth.guard';
 import type { Request } from 'express';
+
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
