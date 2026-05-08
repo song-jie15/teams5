@@ -63,5 +63,28 @@
 
 <script setup lang="ts">
 import avatar from '@/assets/images/avatar/default.png'
+import { useRouter } from 'vue-router';
+import { useUserStore } from '@/stores/user'
+import { computed } from 'vue';
+const userStore = useUserStore();
+const isLoggedIn=computed(()=>!!userStore?.getUser)
+const router = useRouter();  
+const bio=computed(()=>userStore.getUser?.bio??'')
+const displayName=computed(()=>userStore.getUser?.name??'游客')
+// 跳转页面
+const gotoPath=(path:string)=>{
+  router.push(path)
+}
+
+
+const loginHandle=()=>{
+
+}
+
+const logoutHandle=()=>{
+
+}
+
+
 
 </script>

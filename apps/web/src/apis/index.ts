@@ -58,7 +58,7 @@ aiApi.interceptors.request.use((config) => {
     }
     return config
 })
-
+export const avatarUrl = '/api/v1'
 export interface Response<T = any> {
     timestamp: string,
     path: string,
