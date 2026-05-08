@@ -16,6 +16,9 @@ export class ResponseService {
             data,
             code: Business.SUCCESS.code,
             message: Business.SUCCESS.message,
+            success: true,
+            timestamp: new Date().toISOString(),
+            path: '',
         }
     }
     error(data = null, message: string, code: number = Business.ERROR.code) {
@@ -23,6 +26,9 @@ export class ResponseService {
             data,
             code,
             message: message || Business.ERROR.message,
+            success: false,
+            timestamp: new Date().toISOString(),
+            path: '',
         }
     }
 }

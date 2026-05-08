@@ -1,9 +1,12 @@
 import axios from 'axios'
+<<<<<<< HEAD
 import type { AxiosResponse, AxiosError } from 'axios'
 import { useAuthStore } from '@/stores/auth'
 import router from '@/router'
 import { refreshTokenApi } from './auth'
 
+=======
+>>>>>>> 4c73c8495d1a48659a6a13317d34d6ca4a2dc34a
 export const timeout = 50000
 let isRefreshing = false
 let requestQueue: ((newAccessToken: string) => void)[] = []
@@ -23,6 +26,7 @@ serverApi.interceptors.request.use(config => {
 })
 
 serverApi.interceptors.response.use(
+<<<<<<< HEAD
     (res: AxiosResponse) => res.data,
     async (error: AxiosError) => {
         if (error.response?.status !== 401) {
@@ -74,11 +78,22 @@ serverApi.interceptors.response.use(
     }
 )
 
+=======
+    (res) => {
+        return res.data
+    },
+    (error) => {
+        return Promise.reject(error)
+    }
+)
+
+>>>>>>> 4c73c8495d1a48659a6a13317d34d6ca4a2dc34a
 export const aiApi = axios.create({
     baseURL: '/api/ai/v1',
     timeout,
 })
 
+<<<<<<< HEAD
 aiApi.interceptors.response.use(
     (res: AxiosResponse) => res.data,
     (error: AxiosError) => {
@@ -90,6 +105,12 @@ aiApi.interceptors.response.use(
         return Promise.reject(error)
     }
 )
+=======
+aiApi.interceptors.response.use(res=>{
+    return res.data
+})
+
+>>>>>>> 4c73c8495d1a48659a6a13317d34d6ca4a2dc34a
 
 export interface Response<T = any> {
     timestamp: string

@@ -1,19 +1,23 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '@libs/shared';
 import { ResponseService } from '@libs/shared';
+<<<<<<< HEAD
 import { JwtService } from '@nestjs/jwt';
 import { AuthService } from '../auth/auth.service';
 import * as bcrypt from 'bcrypt';
 import { Prisma } from '@libs/shared/generated/prisma/client';
 import type { Token, RefreshTokenPayload } from '@en/common/user';
 
+=======
+>>>>>>> 4c73c8495d1a48659a6a13317d34d6ca4a2dc34a
 @Injectable()
 export class UserService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly response: ResponseService,
+<<<<<<< HEAD
     private readonly jwtService: JwtService,
     private readonly authService: AuthService,
   ) {}
@@ -36,6 +40,11 @@ export class UserService {
       }
       throw error;
     }
+=======
+  ) {}
+  create(createUserDto: CreateUserDto) {
+    return 'This action adds a new user';
+>>>>>>> 4c73c8495d1a48659a6a13317d34d6ca4a2dc34a
   }
 
   async refreshToken(refreshToken: string) {
@@ -58,35 +67,19 @@ export class UserService {
   }
 
   async findAll() {
-    const users = await this.prisma.user.findMany({
-      select: { id: true, name: true, phone: true, email: true, avatar: true, wordNumber: true, dayNumber: true, createdAt: true, updatedAt: true, lastLoginAt: true },
-    });
-    return this.response.success(users);
+    const test = await this.prisma.user.findMany();
+    return this.response.success(test);
   }
 
-  async findOne(id: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { id },
-      select: { id: true, name: true, phone: true, email: true, avatar: true, wordNumber: true, dayNumber: true, createdAt: true, updatedAt: true, lastLoginAt: true },
-    });
-    return this.response.success(user);
+  findOne(id: number) {
+    return `This action returns a #${id} user`;
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto) {
-    const data: any = { ...updateUserDto };
-    if (data.password) {
-      data.password = await bcrypt.hash(data.password, 10);
-    }
-    const user = await this.prisma.user.update({
-      where: { id },
-      data,
-    });
-    const { password: _, ...result } = user;
-    return this.response.success(result);
+  update(id: number, updateUserDto: UpdateUserDto) {
+    return `This action updates a #${id} user`;
   }
 
-  async remove(id: string) {
-    await this.prisma.user.delete({ where: { id } });
-    return this.response.success(null);
+  remove(id: number) {
+    return `This action removes a #${id} user`;
   }
 }
