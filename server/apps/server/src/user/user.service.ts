@@ -4,8 +4,10 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '@libs/shared';
 import { ResponseService } from '@libs/shared';
 import { JwtService } from '@nestjs/jwt';
+import { AuthService } from '../auth/auth.service';
 import * as bcrypt from 'bcrypt';
 import { Prisma } from '@libs/shared/generated/prisma/client';
+import type { Token, RefreshTokenPayload } from '@en/common/user';
 
 @Injectable()
 export class UserService {
@@ -13,18 +15,19 @@ export class UserService {
     private readonly prisma: PrismaService,
     private readonly response: ResponseService,
     private readonly jwtService: JwtService,
+    private readonly authService: AuthService,
   ) {}
 
-  async create(createUserDto: CreateUserDto) {
+  async register(createUserDto: CreateUserDto) {
     const { password, ...rest } = createUserDto;
     const hashedPassword = await bcrypt.hash(password, 10);
     try {
       const user = await this.prisma.user.create({
         data: { ...rest, password: hashedPassword },
       });
-      const token = this.jwtService.sign({ sub: user.id, phone: user.phone });
+      const token = this.authService.generateToken({ userId: user.id, name: user.name, email: user.email });
       const { password: _, ...result } = user;
-      return this.response.success({ user: result, token });
+      return this.response.success({ ...result, token });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
         const target = (error.meta?.target as string[])?.[0];
@@ -32,6 +35,25 @@ export class UserService {
         throw new ConflictException(`${field}已被注册`);
       }
       throw error;
+    }
+  }
+
+  async refreshToken(refreshToken: string) {
+    try {
+      const decoded = this.jwtService.verify<RefreshTokenPayload>(refreshToken);
+      if (decoded.tokenType !== 'refresh') {
+        return this.response.error(null, 'refreshToken已过期或无效');
+      }
+      const user = await this.prisma.user.findUnique({
+        where: { id: decoded.userId },
+      });
+      if (!user) {
+        return this.response.error(null, '用户不存在');
+      }
+      const token = this.authService.generateToken({ userId: user.id, name: user.name, email: user.email });
+      return this.response.success(token);
+    } catch {
+      return this.response.error(null, 'refreshToken已过期或无效');
     }
   }
 

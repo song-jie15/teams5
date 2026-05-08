@@ -1,29 +1,35 @@
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
-import { registerApi, loginApi, type RegisterParams, type LoginParams, type UserInfo } from '@/apis/user'
+import type { WebResultUser, Token } from '@en/common/user'
+import { registerApi, loginApi, type RegisterParams, type LoginParams } from '@/apis/user'
 
 export const useAuthStore = defineStore('auth', () => {
-  const token = ref('')
-  const user = ref<UserInfo | null>(null)
+  const user = ref<WebResultUser | null>(null)
+
+  const getAccessToken = computed(() => user.value?.token.accessToken)
+  const getRefreshToken = computed(() => user.value?.token.refreshToken)
+
+  const updateToken = (newToken: Token) => {
+    if (user.value) {
+      user.value.token = newToken
+    }
+  }
 
   async function register(params: RegisterParams) {
     const res = await registerApi(params)
-    token.value = res.data.token
-    user.value = res.data.user
+    user.value = res.data
   }
 
   async function login(params: LoginParams) {
     const res = await loginApi(params)
-    token.value = res.data.token
-    user.value = res.data.user
+    user.value = res.data
   }
 
   function logout() {
-    token.value = ''
     user.value = null
   }
 
-  return { token, user, register, login, logout }
+  return { user, getAccessToken, getRefreshToken, updateToken, register, login, logout }
 }, {
   persist: true,
 })

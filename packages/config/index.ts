@@ -6,6 +6,7 @@ export const Config = {
     },
     jwt: {
         secret: process.env.JWT_SECRET || 'en-secret-key-2024',
-        expiresIn: 604800, // 7 days in seconds
+        accessExpiresIn: 3600, // 1 hour
+        refreshExpiresIn: 604800, // 7 days
     }
 }

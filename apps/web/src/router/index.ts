@@ -18,7 +18,8 @@ router.beforeEach((to) => {
     }
     try {
       const parsed = JSON.parse(authRaw)
-      if (!parsed.token) {
+      const hasAccess = parsed?.user?.token?.accessToken || parsed?.token
+      if (!hasAccess) {
         window.dispatchEvent(new CustomEvent('auth:login-required'))
         return { path: '/' }
       }
