@@ -5,7 +5,7 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider     = "prisma-client"
+  provider     = "prisma-client-js"
   output       = "../libs/shared/src/generated/prisma"
   moduleFormat = "cjs" // 模块格式
 }
@@ -28,13 +28,11 @@ model User {
   email           String?          @unique // 邮箱
   phone           String           @unique // 手机号
   address         String? // 地址
-  password        String // 密码
   avatar          String? // 头像
   wordNumber      Int              @default(0) // 单词数量
   dayNumber       Int              @default(0) // 打卡天数
   createdAt       DateTime         @default(now()) // 创建时间
   updatedAt       DateTime         @updatedAt // 更新时间
-  lastLoginAt     DateTime? // 最后登录时间
   wordBookRecords WordBookRecord[]
   paymentRecords  PaymentRecord[]
   courseRecords   CourseRecord[]
@@ -125,8 +123,9 @@ model Course {
   description   String? // 课程描述
   teacher       String // 教师
   url           String // 课程url
-  price         Decimal // 课程价格
+  price         Decimal @db.Decimal(10, 2) // 课程价格
   createdAt     DateTime       @default(now()) // 创建时间
   updatedAt     DateTime       @updatedAt // 更新时间
   courseRecords CourseRecord[]
 }
+
