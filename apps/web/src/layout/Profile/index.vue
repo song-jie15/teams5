@@ -72,6 +72,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { ElMessageBox } from 'element-plus'
 import { useUserStore } from '@/stores/user'
 import { useAvatar } from '@/hooks/useAvatar'
 import { useLogin } from '@/hooks/useLogin'
@@ -94,7 +95,13 @@ const loginHandle = () => {
 }
 
 const logoutHandle = () => {
-  logout()
-  router.replace('/')
+  ElMessageBox.confirm('确定退出登录吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(() => {
+    logout()
+    router.replace('/')
+  })
 }
 </script>

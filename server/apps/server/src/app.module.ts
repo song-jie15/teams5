@@ -7,8 +7,9 @@ import { SharedModule } from '@libs/shared';
 import { WordBookModule } from './word-book/word-book.module';
  import { ConfigModule } from '@nestjs/config';
  import {MinioModule} from '@libs/shared/minio/minio.module';
+import { TrackerModule } from './tracker/tracker.module';
 @Module({
-  imports: [UserModule, AuthModule, SharedModule, WordBookModule,
+  imports: [UserModule, AuthModule, SharedModule, WordBookModule, TrackerModule,
      ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',

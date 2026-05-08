@@ -1,5 +1,6 @@
 import axios from 'axios'
 import type { AxiosResponse, AxiosError } from 'axios'
+import { ElMessage } from 'element-plus'
 export const timeout = 50000
 export const serverApi = axios.create({
     baseURL: '/api/v1',
@@ -9,6 +10,10 @@ export const serverApi = axios.create({
 serverApi.interceptors.response.use(
     (res: AxiosResponse) => res.data,
     (error: AxiosError) => {
+        if (error.code === 'ERR_NETWORK') {
+            ElMessage.error('网络连接失败,请重试')
+            return Promise.reject(error)
+        }
         if (error.response?.status === 401) {
             localStorage.removeItem('auth')
             window.dispatchEvent(new CustomEvent('auth:unauthorized'))
