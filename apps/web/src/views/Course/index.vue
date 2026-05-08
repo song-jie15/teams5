@@ -8,25 +8,33 @@
             </header>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <article v-for="item in list" :key="item.id"
-                    class="group bg-white rounded-2xl overflow-hidden border border-zinc-100 shadow-sm hover:shadow-lg hover:shadow-indigo-500/5 hover:border-indigo-100 transition-all duration-300 flex flex-col">
+                <article 
+                    v-for="item in list" 
+                    :key="String(item.id || '')" 
+                    class="group bg-white rounded-2xl overflow-hidden border border-zinc-100 shadow-sm hover:shadow-lg hover:shadow-indigo-500/5 hover:border-indigo-100 transition-all duration-300 flex flex-col"
+                >
                     <div class="relative aspect-4/3 bg-zinc-100 overflow-hidden">
-                        <img :src="imageSrc(item.url)" :alt="item.name"
-                            class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out" />
-                        <div
-                            class="absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-white/90 backdrop-blur text-xs font-medium text-zinc-600 shadow-sm">
-                            词汇</div>
+                        <img 
+                            :src="imageSrc(String(item.url || ''))" 
+                            :alt="String(item.name || '课程封面')"
+                            class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out" 
+                        />
+                        <div class="absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-white/90 backdrop-blur text-xs font-medium text-zinc-600 shadow-sm">
+                            词汇
+                        </div>
                     </div>
                     <div class="p-5 flex-1 flex flex-col">
                         <h2 class="text-base font-semibold text-zinc-900 line-clamp-1">{{ item.name }}</h2>
-                        <p class="mt-2 text-sm text-zinc-500 line-clamp-2 leading-relaxed flex-1">{{ item.description }}
-                        </p>
+                        <p class="mt-2 text-sm text-zinc-500 line-clamp-2 leading-relaxed flex-1">{{ item.description }}</p>
                         <div class="mt-4 pt-4 border-t border-zinc-100 flex items-center justify-between gap-3">
                             <span class="text-xs text-zinc-400 truncate">讲师 {{ item.teacher }}</span>
                             <span class="text-lg font-bold text-indigo-600 shrink-0">{{ formatPriceWithSymbol(item.price) }}</span>
                         </div>
-                        <button type="button" disabled
-                            class="mt-4 w-full py-2.5 rounded-xl text-sm font-medium text-zinc-400 border border-zinc-200 bg-zinc-50 cursor-not-allowed">
+                        <button 
+                            type="button" 
+                            disabled
+                            class="mt-4 w-full py-2.5 rounded-xl text-sm font-medium text-zinc-400 border border-zinc-200 bg-zinc-50 cursor-not-allowed"
+                        >
                             购买课程
                         </button>
                     </div>
@@ -35,13 +43,13 @@
         </div>
     </div>
 </template>
+
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import type { CourseList } from '@en/common/course';
 import { getCourseList } from '@/apis/course';
 import { formatPriceWithSymbol } from '@en/common/utils/price';
 
-const list = ref<CourseList>([]);
+const list = ref<any[]>([]);
 
 const imageSrc = (url: string) => {
     return url;
@@ -50,12 +58,8 @@ const imageSrc = (url: string) => {
 const getList = async () => {
     try {
         const res = await getCourseList();
-        const responseData = (res as any).data;
-        if (responseData && Array.isArray(responseData)) {
-            list.value = responseData;
-        } else if (responseData && responseData.data && Array.isArray(responseData.data)) {
-            list.value = responseData.data;
-        }
+        const data = res?.data || res || [];
+        list.value = Array.isArray(data) ? data : [];
     } catch (error) {
         console.error('Error fetching course list:', error);
     }

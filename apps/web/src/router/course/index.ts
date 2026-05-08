@@ -6,8 +6,7 @@ const courseRoutes: RouteRecordRaw[] = [
     path: '/courses',
     component: layout,
     children: [
-      { path: 'index', component: () => import('@/views/Course/index.vue') },
-      { path: 'detail/:id', component: () => import('@/views/Course/detail.vue') }
+      { path: 'index', component: () => import('@/views/Course/index.vue') }
     ]
   }
 ]

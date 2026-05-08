@@ -2,8 +2,18 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "declaration": false,
-    "outDir": "../../dist/apps/server"
+    "outDir": "../../dist/apps/server",
   },
-  "include": ["src/**/*"],
+   "paths": {
+      "@libs/shared": ["../../libs/shared/src"],
+      "@libs/shared/*": ["../../libs/shared/src/*"],
+      "@en/config": ["../../packages/config/index.ts"],
+      "@en/common": ["../../packages/common/index.ts"]
+    },
+  "include": [
+    "src/**/*",
+    "../../libs/shared/src/**/*",
+    "../../packages/config/index.ts"
+  ],
   "exclude": ["node_modules", "dist", "test", "**/*spec.ts"]
 }
