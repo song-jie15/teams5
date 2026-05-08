@@ -18,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import ModelViewer from './ModelViewer.vue'
+import ModelViewer from '../../components/Login/ModelViewer.vue'
 import LoginForm from './LoginForm.vue'
 import RegisterForm from './RegisterForm.vue'
 import { inject, ref, watch, onUnmounted } from 'vue'

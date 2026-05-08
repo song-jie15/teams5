@@ -16,5 +16,5 @@ app.use(pinia) // 使用 Pinia
 setupTrackerUserBinding()
 app.use(ElementPlus, { locale: zhCn }) // 使用 ElementPlus
 app.use(router) // 使用 Router
-
+app.use(focus) // 使用 focus 指令插件
 app.mount('#app')

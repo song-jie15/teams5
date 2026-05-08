@@ -20,20 +20,21 @@ export interface UserInfo {
 }
 
 export interface RegisterParams {
-  name: string
-  phone: string
-  email?: string
-  password: string
+    name: string
+    phone: string
+    email?: string
+    password: string
 }
 
 export interface LoginParams {
-  phone: string
-  password: string
+    phone: string
+    password: string
 }
 
-export interface AuthResult {
-  user: UserInfo
-  token: string
+export interface UpdateProfileParams {
+    name?: string
+    email?: string
+    avatar?: string
 }
 
 export const registerApi = (data: RegisterParams) => {

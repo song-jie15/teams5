@@ -16,16 +16,20 @@ router.beforeEach((to) => {
   if (to.meta.requiresAuth) {
     const authRaw = localStorage.getItem('auth')
     if (!authRaw) {
+      sessionStorage.setItem('redirectPath', to.fullPath)
       window.dispatchEvent(new CustomEvent('auth:login-required'))
       return { path: '/' }
     }
     try {
       const parsed = JSON.parse(authRaw)
-      if (!parsed.token) {
+      const hasAccess = parsed?.user?.token?.accessToken || parsed?.token
+      if (!hasAccess) {
+        sessionStorage.setItem('redirectPath', to.fullPath)
         window.dispatchEvent(new CustomEvent('auth:login-required'))
         return { path: '/' }
       }
     } catch {
+      sessionStorage.setItem('redirectPath', to.fullPath)
       window.dispatchEvent(new CustomEvent('auth:login-required'))
       return { path: '/' }
     }

@@ -26,5 +26,9 @@
       "@libs/shared": ["libs/shared/src"],
       "@libs/shared/*": ["libs/shared/src/*"]
     }
-  }
+  },
+  "exclude": [
+    "**/*.spec.ts",
+    "**/*.test.ts"
+  ]
 }
