@@ -1,23 +1,21 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { PrismaService } from '@libs/shared';
 import { ResponseService } from '@libs/shared';
-<<<<<<< HEAD
 import { JwtService } from '@nestjs/jwt';
 import { AuthService } from '../auth/auth.service';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { Prisma } from '@libs/shared/generated/prisma/client';
 import type { Token, RefreshTokenPayload } from '@en/common/user';
 
-=======
->>>>>>> 4c73c8495d1a48659a6a13317d34d6ca4a2dc34a
 @Injectable()
 export class UserService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly response: ResponseService,
-<<<<<<< HEAD
     private readonly jwtService: JwtService,
     private readonly authService: AuthService,
   ) {}
@@ -40,11 +38,6 @@ export class UserService {
       }
       throw error;
     }
-=======
-  ) {}
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
->>>>>>> 4c73c8495d1a48659a6a13317d34d6ca4a2dc34a
   }
 
   async refreshToken(refreshToken: string) {
@@ -81,5 +74,44 @@ export class UserService {
 
   remove(id: number) {
     return `This action removes a #${id} user`;
+  }
+
+  async profile(userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new UnauthorizedException('用户不存在');
+    }
+    const { password: _, ...result } = user;
+    return this.response.success(result);
+  }
+
+  async updateProfile(userId: string, dto: UpdateProfileDto) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new UnauthorizedException('用户不存在');
+    }
+    const updated = await this.prisma.user.update({
+      where: { id: userId },
+      data: dto,
+    });
+    const { password: _, ...result } = updated;
+    return this.response.success(result);
+  }
+
+  async changePassword(userId: string, dto: ChangePasswordDto) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new UnauthorizedException('用户不存在');
+    }
+    const isPasswordValid = await bcrypt.compare(dto.oldPassword, user.password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('原密码不正确');
+    }
+    const hashedPassword = await bcrypt.hash(dto.newPassword, 10);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword },
+    });
+    return this.response.success(null);
   }
 }

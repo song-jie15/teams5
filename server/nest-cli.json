@@ -15,7 +15,7 @@
     "ai": {
       "type": "application",
       "root": "apps/ai",
-      "entryFile": "main",
+      "entryFile": "apps/ai/src/main",
       "sourceRoot": "apps/ai/src",
       "compilerOptions": {
         "tsConfigPath": "apps/ai/tsconfig.app.json"
@@ -24,7 +24,7 @@
     "server": {
       "type": "application",
       "root": "apps/server",
-      "entryFile": "main",
+      "entryFile": "apps/server/src/main",
       "sourceRoot": "apps/server/src",
       "compilerOptions": {
         "tsConfigPath": "apps/server/tsconfig.app.json"

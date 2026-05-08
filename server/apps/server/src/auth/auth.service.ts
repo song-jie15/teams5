@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '@libs/shared';
 import { ResponseService } from '@libs/shared';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import type { TokenPayload, Token, RefreshTokenPayload } from '@en/common/user';
 import { Config } from '@en/config';
 

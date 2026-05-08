@@ -27,10 +27,12 @@ model User {
   name            String // 用户名
   email           String?          @unique // 邮箱
   phone           String           @unique // 手机号
+  password        String // 密码
   address         String? // 地址
   avatar          String? // 头像
   wordNumber      Int              @default(0) // 单词数量
   dayNumber       Int              @default(0) // 打卡天数
+  lastLoginAt     DateTime? // 最后登录时间
   createdAt       DateTime         @default(now()) // 创建时间
   updatedAt       DateTime         @updatedAt // 更新时间
   wordBookRecords WordBookRecord[]

@@ -35,8 +35,10 @@ import type { FormInstance } from 'element-plus'
 import { ElMessage } from 'element-plus'
 import { User, Lock } from '@element-plus/icons-vue'
 import { useAuthStore } from '../../stores/auth'
+import { useRouter } from 'vue-router'
 
 const emit = defineEmits(['close'])
+const router = useRouter()
 const authStore = useAuthStore()
 const formRef = ref<FormInstance>()
 const loading = ref(false)

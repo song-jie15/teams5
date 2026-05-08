@@ -32,8 +32,10 @@ import type { FormInstance } from 'element-plus'
 import { ElMessage } from 'element-plus'
 import { User, Lock } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
+import { useRouter } from 'vue-router'
 
 const emit = defineEmits(['close'])
+const router = useRouter()
 const authStore = useAuthStore()
 const formRef = ref<FormInstance>()
 const loading = ref(false)
@@ -61,6 +63,11 @@ const handleLogin = async () => {
         await authStore.login(form.value)
         ElMessage.success('登录成功')
         emit('close')
+        const redirect = sessionStorage.getItem('redirectPath')
+        sessionStorage.removeItem('redirectPath')
+        if (redirect && redirect !== '/') {
+            router.push(redirect)
+        }
     } catch (error: any) {
         ElMessage.error(error?.response?.data?.message || '登录失败，请重试')
     } finally {

@@ -36,19 +36,57 @@
                 </el-icon> <span class="font-bold text-sm">{{ 0 }}</span></div>
             <div class="flex items-center gap-2 bg-amber-200 text-amber-700 rounded-full px-2 py-1"><el-icon>
                     <Star />
-                </el-icon> <span class="font-bold text-sm">{{  0 }}</span></div>
-            <div  class="flex items-center gap-2 border-l cursor-pointer border-gray-200 pl-4">
-                <img class="w-10 h-10 rounded-full ml-2 mr-2"
-                    src="https://gips3.baidu.com/it/u=3493347002,3356558679&fm=3074&app=3074&f=PNG?w=2048&h=2048" />
-                <span class="text-sm font-bold">{{  '未登录' }}</span>
+                </el-icon> <span class="font-bold text-sm">{{ 0 }}</span></div>
+            <div v-if="authStore.user" class="flex items-center gap-2 border-l cursor-pointer border-gray-200 pl-4">
+                <el-dropdown trigger="click" @command="handleUserCommand">
+                    <div class="flex items-center gap-2">
+                        <img class="w-10 h-10 rounded-full ml-2 mr-2"
+                            :src="authStore.user.avatar || 'https://gips3.baidu.com/it/u=3493347002,3356558679&fm=3074&app=3074&f=PNG?w=2048&h=2048'" />
+                        <span class="text-sm font-bold">{{ authStore.user.name }}</span>
+                        <el-icon><ArrowDown /></el-icon>
+                    </div>
+                    <template #dropdown>
+                        <el-dropdown-menu>
+                            <el-dropdown-item command="profile"><el-icon><User /></el-icon>个人中心</el-dropdown-item>
+                            <el-dropdown-item command="setting"><el-icon><Setting /></el-icon>设置</el-dropdown-item>
+                            <el-dropdown-item command="logout" divided><el-icon><SwitchButton /></el-icon>退出登录</el-dropdown-item>
+                        </el-dropdown-menu>
+                    </template>
+                </el-dropdown>
+            </div>
+            <div v-else @click="showLogin" class="flex items-center gap-2 border-l cursor-pointer border-gray-200 pl-4">
+                <el-button type="primary" size="small" round>登录 / 注册</el-button>
             </div>
         </div>
     </header>
 </template>
 
-
 <script setup lang="ts">
-import { Sunny, Star, HomeFilled, Notebook, MagicStick, Reading, Setting } from '@element-plus/icons-vue'
+import { Sunny, Star, HomeFilled, Notebook, MagicStick, Reading, Setting, ArrowDown, User, SwitchButton } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router';
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { useAuthStore } from '@/stores/auth'
+import { useLogin } from '@/hooks/useLogin'
+
 const router = useRouter()
+const authStore = useAuthStore()
+const { login: showLogin } = useLogin()
+
+const handleUserCommand = (command: string) => {
+    if (command === 'profile') {
+        router.push('/setting/index')
+    } else if (command === 'setting') {
+        router.push('/setting/index')
+    } else if (command === 'logout') {
+        ElMessageBox.confirm('确定要退出登录吗？', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning',
+        }).then(() => {
+            authStore.logout()
+            ElMessage.success('已退出登录')
+            router.push('/')
+        }).catch(() => {})
+    }
+}
 </script>

@@ -4,7 +4,7 @@
     <Login />
     <Search />
   </div>
-  <RouterView />
+  
 </template>
 
 <script setup lang="ts">
@@ -29,5 +29,4 @@ onUnmounted(() => {
   window.removeEventListener('auth:unauthorized', handleAuthEvent)
   window.removeEventListener('auth:login-required', handleAuthEvent)
 })
-</script>
 </script>

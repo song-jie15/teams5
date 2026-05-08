@@ -9,7 +9,7 @@
                 <div class="text-1xl font-bold pt-5 text-gray-300">超1000000学员的选择，提升您的英语能力</div>
                 <div class="flex items-center gap-2 pt-10">
                     <button
-                        class="bg-indigo-700 text-white rounded-[100px] px-4 py-2 cursor-pointer text-sm block w-30 h-10">立即学习</button>
+                        class="bg-indigo-700 text-white rounded-[100px] px-4 py-2 cursor-pointer text-sm block w-30 h-10" @click="showLogin">立即学习</button>
                     <button
                         class="bg-indigo-700 text-white rounded-[100px] px-4 py-2 cursor-pointer text-sm block w-30 h-10">查看课程</button>
                 </div>
@@ -208,17 +208,11 @@ const initProject = () => {
 onMounted(() => {
     initProject()
 })
-    <div>
-        <h1>Home</h1>
-    </div>
-</template>
-<script setup lang="ts">
-<<<<<<< HEAD
+
+
 import { useLogin } from '../../hooks/useLogin';
 const { login } = useLogin()
 const showLogin = ()=>{
     login()  
 }
-=======
->>>>>>> 4c73c8495d1a48659a6a13317d34d6ca4a2dc34a
 </script>

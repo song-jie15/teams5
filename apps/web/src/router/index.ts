@@ -2,20 +2,22 @@ import { createRouter, createWebHistory } from 'vue-router'
 import home from './home/index'
 import wordBook from './word-book/index'
 import course from './course/index'
+import setting from './setting/index'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    ...home, //主页
-    ...wordBook, //词库
-    ...course,//课程
+    ...home,
+    ...wordBook,
+    ...course,
+    ...setting,
   ]
 })
 
-<<<<<<< HEAD
 router.beforeEach((to) => {
   if (to.meta.requiresAuth) {
     const authRaw = localStorage.getItem('auth')
     if (!authRaw) {
+      sessionStorage.setItem('redirectPath', to.fullPath)
       window.dispatchEvent(new CustomEvent('auth:login-required'))
       return { path: '/' }
     }
@@ -23,16 +25,16 @@ router.beforeEach((to) => {
       const parsed = JSON.parse(authRaw)
       const hasAccess = parsed?.user?.token?.accessToken || parsed?.token
       if (!hasAccess) {
+        sessionStorage.setItem('redirectPath', to.fullPath)
         window.dispatchEvent(new CustomEvent('auth:login-required'))
         return { path: '/' }
       }
     } catch {
+      sessionStorage.setItem('redirectPath', to.fullPath)
       window.dispatchEvent(new CustomEvent('auth:login-required'))
       return { path: '/' }
     }
   }
 })
 
-=======
->>>>>>> 4c73c8495d1a48659a6a13317d34d6ca4a2dc34a
 export default router
