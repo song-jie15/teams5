@@ -38,3 +38,13 @@ export type Token = {
 export type WebResultUser = ResultUser & {
     token: Token
 }
+
+// 在文件里补充这个定义
+export type RefreshTokenPayload = {
+  userId: number;
+  tokenType: 'refresh';
+};
+
+
+
+
