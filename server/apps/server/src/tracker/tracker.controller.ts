@@ -1,4 +1,4 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { TrackerService } from './tracker.service';
 import type {
   UvDto,
@@ -41,5 +41,10 @@ export class TrackerController {
   @Post('error')
   async error(@Body() body: ErrorDto) {
     return this.trackerService.error(body);
+  }
+
+  @Get('stats')
+  async stats() {
+    return this.trackerService.stats();
   }
 }

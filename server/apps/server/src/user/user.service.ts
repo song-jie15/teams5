@@ -10,7 +10,7 @@ import { JwtService } from '@nestjs/jwt';
 import { AuthService } from '../auth/auth.service';
 import * as bcrypt from 'bcryptjs';
 import { Prisma } from '@libs/shared/generated/prisma/client';
-import type { UserLogin, UserRegister, UserUpdate, Token, AvatarResult } from '@en/common/user';
+import type { RefreshTokenPayload, UserLogin, UserRegister, UserUpdate, Token, AvatarResult } from '@en/common/user';
 import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class UserService {
@@ -20,46 +20,10 @@ export class UserService {
     private readonly jwtService: JwtService,
     private readonly minioService: MinioService,
     private readonly configService: ConfigService,
+    private readonly authService: AuthService,
   ) {}
 
-  async register(createUserDto: CreateUserDto) {
-    const { password, ...rest } = createUserDto;
-    const hashedPassword = await bcrypt.hash(password, 10);
-    try {
-      const user = await this.prisma.user.create({
-        data: { ...rest, password: hashedPassword },
-      });
-      const token = this.authService.generateToken({ userId: user.id, name: user.name, email: user.email });
-      const { password: _, ...result } = user;
-      return this.response.success({ ...result, token });
-    } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
-        const target = (error.meta?.target as string[])?.[0];
-        const field = target === 'phone' ? '手机号' : target === 'email' ? '邮箱' : '该信息';
-        throw new ConflictException(`${field}已被注册`);
-      }
-      throw error;
-    }
-  }
-
-  async refreshToken(refreshToken: string) {
-    try {
-      const decoded = this.jwtService.verify<RefreshTokenPayload>(refreshToken);
-      if (decoded.tokenType !== 'refresh') {
-        return this.response.error(null, 'refreshToken已过期或无效');
-      }
-      const user = await this.prisma.user.findUnique({
-        where: { id: decoded.userId },
-      });
-      if (!user) {
-        return this.response.error(null, '用户不存在');
-      }
-      const token = this.authService.generateToken({ userId: user.id, name: user.name, email: user.email });
-      return this.response.success(token);
-    } catch {
-      return this.response.error(null, 'refreshToken已过期或无效');
-    }
-  }
+ 
 
   async findAll() {
     const test = await this.prisma.user.findMany();
@@ -130,9 +94,9 @@ export class UserService {
       where: { id: user.id },
       data: { lastLoginAt: new Date() },
     });
-    const token = this.jwtService.sign({ sub: user.id, phone: user.phone });
+    const token = this.authService.generateToken({ userId: user.id, name: user.name, email: user.email });
     const { password: _, ...result } = user;
-    return this.response.success({ user: result, token });
+    return this.response.success({ ...result, token });
   }
 
   async register(dto: UserRegister) {
@@ -142,9 +106,9 @@ export class UserService {
       const user = await this.prisma.user.create({
         data: { ...rest, password: hashedPassword },
       });
-      const token = this.jwtService.sign({ sub: user.id, phone: user.phone });
+      const token = this.authService.generateToken({ userId: user.id, name: user.name, email: user.email });
       const { password: _, ...result } = user;
-      return this.response.success({ user: result, token });
+      return this.response.success({ ...result, token });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
         const target = (error.meta?.target as string[])?.[0];
@@ -157,13 +121,15 @@ export class UserService {
            
   async refreshToken(dto: Omit<Token, 'accessToken'>) {
     try {
-      const payload = this.jwtService.verify<{ sub: string; phone: string }>(dto.refreshToken);
-      const user = await this.prisma.user.findUnique({ where: { id: payload.sub } });
+      const payload = this.jwtService.verify<RefreshTokenPayload>(dto.refreshToken);
+      if (payload.tokenType !== 'refresh') {
+        throw new UnauthorizedException('refreshToken无效或已过期');
+      }
+      const user = await this.prisma.user.findUnique({ where: { id: payload.userId } });
       if (!user) {
         throw new UnauthorizedException('用户不存在');
       }
-      const accessToken = this.jwtService.sign({ sub: user.id, phone: user.phone });
-      return this.response.success({ accessToken, refreshToken: dto.refreshToken });
+      return this.response.success(this.authService.generateToken({ userId: user.id, name: user.name, email: user.email }));
     } catch {
       throw new UnauthorizedException('refreshToken无效或已过期');
     }
@@ -197,9 +163,9 @@ export class UserService {
     return this.response.success(result);
   }
 
-  async updateUser(dto: UserUpdate, user: { id: string; phone: string }) {
+  async updateUser(dto: UserUpdate, user: { userId: string }) {
     const updated = await this.prisma.user.update({
-      where: { id: user.id },
+      where: { id: user.userId },
       data: { ...dto },
     });
     const { password: _, ...result } = updated;

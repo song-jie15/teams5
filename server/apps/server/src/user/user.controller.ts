@@ -3,7 +3,7 @@ import { Controller, Post, Body, UploadedFile, UseInterceptors, Req, UseGuards }
 import { UserService } from './user.service';
 import type { UserLogin, UserRegister, Token, UserUpdate } from '@en/common/user';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { AuthGuard } from '@libs/shared/auth/auth.guard';
+import { AuthGuard } from '../auth/guards/auth.guard';
 import type { Request } from 'express';
 
 @Controller('user')
@@ -36,7 +36,7 @@ export class UserController {
   @UseGuards(AuthGuard)
   @Post('update-user')
   updateUser(@Body() createUserDto: UserUpdate, @Req() req: Request) {
-    const user = req.user! as { id: string; phone: string };
+    const user = req.user! as { userId: string };
     return this.userService.updateUser(createUserDto,user);
   }
 }

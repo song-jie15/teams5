@@ -3,7 +3,7 @@ import { PrismaService } from '@libs/shared';
 import { ResponseService } from '@libs/shared';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
-import type { TokenPayload, Token, RefreshTokenPayload } from '@en/common/user';
+import type { AccessTokenPayload, TokenPayload, Token, RefreshTokenPayload } from '@en/common/user';
 import { Config } from '@en/config';
 
 @Injectable()
@@ -16,9 +16,12 @@ export class AuthService {
 
   generateToken(payload: TokenPayload): Token {
     return {
-      accessToken: this.jwtService.sign<RefreshTokenPayload>({ ...payload, tokenType: 'access' }),
-      refreshToken: this.jwtService.sign<RefreshTokenPayload>({ ...payload, tokenType: 'refresh' }, { expiresIn: Config.jwt.refreshExpiresIn }),
-    }
+      accessToken: this.jwtService.sign<AccessTokenPayload>({ ...payload, tokenType: 'access' }),
+      refreshToken: this.jwtService.sign<RefreshTokenPayload>(
+        { ...payload, tokenType: 'refresh' },
+        { expiresIn: Config.jwt.refreshExpiresIn },
+      ),
+    };
   }
 
   async login(phone: string, password: string) {

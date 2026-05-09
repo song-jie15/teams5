@@ -39,9 +39,22 @@ export type WebResultUser = ResultUser & {
     token: Token
 }
 
+export type TokenPayload = {
+  userId: string;
+  name: string;
+  email?: string | null
+};
+
+// Access Token Payload
+export type AccessTokenPayload = TokenPayload & {
+  tokenType: 'access';
+};
+
 // 在文件里补充这个定义
 export type RefreshTokenPayload = {
-  userId: number;
+  userId: string;
+  name: string;
+  email?: string | null;
   tokenType: 'refresh';
 };
 

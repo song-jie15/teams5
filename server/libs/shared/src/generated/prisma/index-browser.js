@@ -128,9 +128,66 @@ exports.Prisma.UserScalarFieldEnum = {
   password: 'password',
   address: 'address',
   avatar: 'avatar',
+  bio: 'bio',
+  isTimingTask: 'isTimingTask',
+  timingTaskTime: 'timingTaskTime',
   wordNumber: 'wordNumber',
   dayNumber: 'dayNumber',
   lastLoginAt: 'lastLoginAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.VisitorScalarFieldEnum = {
+  id: 'id',
+  anonymousId: 'anonymousId',
+  userId: 'userId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  browser: 'browser',
+  os: 'os',
+  device: 'device'
+};
+
+exports.Prisma.PageViewScalarFieldEnum = {
+  id: 'id',
+  visitorId: 'visitorId',
+  url: 'url',
+  referrer: 'referrer',
+  path: 'path',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.TrackEventScalarFieldEnum = {
+  id: 'id',
+  visitorId: 'visitorId',
+  event: 'event',
+  payload: 'payload',
+  url: 'url',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PerformanceEntryScalarFieldEnum = {
+  id: 'id',
+  visitorId: 'visitorId',
+  fp: 'fp',
+  fcp: 'fcp',
+  lcp: 'lcp',
+  inp: 'inp',
+  cls: 'cls',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ErrorEntryScalarFieldEnum = {
+  id: 'id',
+  visitorId: 'visitorId',
+  error: 'error',
+  message: 'message',
+  stack: 'stack',
+  url: 'url',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -210,6 +267,11 @@ exports.Prisma.SortOrder = {
   desc: 'desc'
 };
 
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
+};
+
 exports.Prisma.QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
@@ -218,6 +280,12 @@ exports.Prisma.QueryMode = {
 exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
+};
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
 };
 exports.TradeStatus = exports.$Enums.TradeStatus = {
   NOT_PAY: 'NOT_PAY',
@@ -229,6 +297,11 @@ exports.TradeStatus = exports.$Enums.TradeStatus = {
 
 exports.Prisma.ModelName = {
   User: 'User',
+  Visitor: 'Visitor',
+  PageView: 'PageView',
+  TrackEvent: 'TrackEvent',
+  PerformanceEntry: 'PerformanceEntry',
+  ErrorEntry: 'ErrorEntry',
   WordBookRecord: 'WordBookRecord',
   WordBook: 'WordBook',
   PaymentRecord: 'PaymentRecord',

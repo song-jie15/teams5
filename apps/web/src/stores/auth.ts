@@ -1,52 +1,98 @@
-import { ref, computed } from 'vue'
+import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
-import { registerApi, loginApi, type RegisterParams, type LoginParams, type UserInfo } from '@/apis/user'
+import { loginApi, registerApi, type LoginParams, type RegisterParams, type UserInfo } from '@/apis/user'
 import { useUserStore } from '@/stores/user'
-import type { WebResultUser } from '@en/common/user'
+import type { Token, WebResultUser } from '@en/common/user'
 
-export const useAuthStore = defineStore('auth', () => {
-  const user = ref<WebResultUser | null>(null)
+type LoginPayload =
+  | (UserInfo & { token: Token | string; refreshToken?: string })
+  | { user: UserInfo; token: Token | string; refreshToken?: string }
 
-  const getAccessToken = computed(() => user.value?.token.accessToken)
-  const getRefreshToken = computed(() => user.value?.token.refreshToken)
-
-  const updateToken = (newToken: Token) => {
-    if (user.value) {
-      user.value.token = newToken
+const normalizeToken = (token: Token | string, refreshToken?: string): Token => {
+  if (typeof token === 'string') {
+    return {
+      accessToken: token,
+      refreshToken: refreshToken || token,
     }
   }
+  return token
+}
 
-  function syncUserStore(userInfo: UserInfo, accessToken: string) {
-    const userStore = useUserStore()
-    userStore.setUser({
-      ...userInfo,
-      token: {
-        accessToken,
-        refreshToken: accessToken,
-      },
-    } as unknown as WebResultUser)
+const normalizeUser = (payload: LoginPayload): WebResultUser => {
+  if ('user' in payload) {
+    return {
+      ...payload.user,
+      token: normalizeToken(payload.token, payload.refreshToken),
+    } as unknown as WebResultUser
   }
 
-  async function register(params: RegisterParams) {
-    const res = await registerApi(params)
-    token.value = res.data.token
-    user.value = res.data.user
-    syncUserStore(res.data.user, res.data.token)
-  }
+  const { token, refreshToken, ...user } = payload
+  return {
+    ...user,
+    token: normalizeToken(token, refreshToken),
+  } as unknown as WebResultUser
+}
 
-  async function login(params: LoginParams) {
-    const res = await loginApi(params)
-    token.value = res.data.token
-    user.value = res.data.user
-    syncUserStore(res.data.user, res.data.token)
-  }
+export const useAuthStore = defineStore(
+  'auth',
+  () => {
+    const user = ref<WebResultUser | null>(null)
 
-  function logout() {
-    user.value = null
-    useUserStore().logout()
-  }
+    const getAccessToken = computed(() => user.value?.token.accessToken)
+    const getRefreshToken = computed(() => user.value?.token.refreshToken)
 
-  return { user, getAccessToken, getRefreshToken, updateToken, register, login, fetchProfile, updateProfile, changePassword, logout }
-}, {
-  persist: true,
-})
+    const persistAuth = (nextUser: WebResultUser) => {
+      user.value = nextUser
+      useUserStore().setUser(nextUser)
+      localStorage.setItem('auth', JSON.stringify({ user: nextUser }))
+    }
+
+    const updateToken = (newToken: Token) => {
+      if (!user.value) return
+      user.value.token = newToken
+      useUserStore().setUser(user.value)
+      localStorage.setItem('auth', JSON.stringify({ user: user.value }))
+    }
+
+    async function login(params: LoginParams) {
+      const res = await loginApi(params)
+      persistAuth(normalizeUser(res.data as LoginPayload))
+    }
+
+    async function register(params: RegisterParams) {
+      const res = await registerApi(params)
+      persistAuth(normalizeUser(res.data as LoginPayload))
+    }
+
+    function restoreFromStorage() {
+      if (user.value) {
+        useUserStore().setUser(user.value)
+        return
+      }
+      const authRaw = localStorage.getItem('auth')
+      if (!authRaw) return
+      try {
+        const parsed = JSON.parse(authRaw)
+        const storedUser = parsed?.user
+        if (storedUser?.token?.accessToken) {
+          user.value = storedUser
+          useUserStore().setUser(storedUser)
+        }
+      } catch {
+        localStorage.removeItem('auth')
+      }
+    }
+
+    function logout() {
+      user.value = null
+      useUserStore().logout()
+      localStorage.removeItem('auth')
+      localStorage.removeItem('user')
+    }
+
+    return { user, getAccessToken, getRefreshToken, updateToken, register, login, restoreFromStorage, logout }
+  },
+  {
+    persist: true,
+  },
+)

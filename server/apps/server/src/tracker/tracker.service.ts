@@ -99,4 +99,42 @@ export class TrackerService {
     });
     return this.responseService.success(true);
   }
+
+  async stats() {
+    const [uv, pv, event, error, performance, eventTypes, topPaths] = await Promise.all([
+      this.prismaService.visitor.count(),
+      this.prismaService.pageView.count(),
+      this.prismaService.trackEvent.count(),
+      this.prismaService.errorEntry.count(),
+      this.prismaService.performanceEntry.count(),
+      this.prismaService.trackEvent.groupBy({
+        by: ['event'],
+        _count: { event: true },
+        orderBy: { _count: { event: 'desc' } },
+        take: 10,
+      }),
+      this.prismaService.pageView.groupBy({
+        by: ['path'],
+        _count: { path: true },
+        orderBy: { _count: { path: 'desc' } },
+        take: 10,
+      }),
+    ]);
+
+    return this.responseService.success({
+      uv,
+      pv,
+      event,
+      error,
+      performance,
+      eventTypes: eventTypes.map((item) => ({
+        event: item.event,
+        count: item._count.event,
+      })),
+      topPaths: topPaths.map((item) => ({
+        path: item.path,
+        count: item._count.path,
+      })),
+    });
+  }
 }

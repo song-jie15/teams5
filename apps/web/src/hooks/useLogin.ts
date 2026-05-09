@@ -3,15 +3,19 @@ import { inject,ref } from "vue";
 import { useAuthStore } from "@/stores/auth";
 import { useUserStore } from "@/stores/user";
 export const useLogin = ()=>{
-    const isShowLogin = inject(IS_SHOW_LOGIN,ref(false))
+   const isShowLogin = inject(IS_SHOW_LOGIN, ref(false))
+// if (!isShowLogin) {
+//   ;(isShowLogin as any).value = false
+// }
+    const showLoginRef = isShowLogin ?? ref(false)
     const login = () =>{
-        isShowLogin.value = true
+        showLoginRef.value = true
 
     }
     const logout = () => {
         useAuthStore().logout()
         useUserStore().logout()
-        isShowLogin.value = false
+        showLoginRef.value = false
     }
     return {login,logout}
 }

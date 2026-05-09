@@ -8,11 +8,14 @@ import 'element-plus/dist/index.css'
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import { setupTrackerUserBinding } from '@/lib/tracker-bootstrap'
+import focus from '@/directive/focus'
+import { useAuthStore } from '@/stores/auth'
 const app = createApp(App) // 创建 App 实例
 const pinia = createPinia() // 创建 Pinia 实例
 pinia.use(piniaPluginPersistedstate) // 使用 Pinia 持久化状态
 setActivePinia(pinia)
 app.use(pinia) // 使用 Pinia
+useAuthStore().restoreFromStorage()
 setupTrackerUserBinding()
 app.use(ElementPlus, { locale: zhCn }) // 使用 ElementPlus
 app.use(router) // 使用 Router

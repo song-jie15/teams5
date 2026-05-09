@@ -22,7 +22,11 @@ router.beforeEach((to) => {
     }
     try {
       const parsed = JSON.parse(authRaw)
-      const hasAccess = parsed?.user?.token?.accessToken || parsed?.token
+      const hasAccess =
+        typeof parsed?.user?.token?.accessToken === 'string' ||
+        typeof parsed?.token?.accessToken === 'string' ||
+        typeof parsed?.token === 'string' ||
+        typeof parsed?.accessToken === 'string'
       if (!hasAccess) {
         sessionStorage.setItem('redirectPath', to.fullPath)
         window.dispatchEvent(new CustomEvent('auth:login-required'))

@@ -1,6 +1,9 @@
 import axios from 'axios'
 import type { AxiosResponse, AxiosError } from 'axios'
 import { ElMessage } from 'element-plus'
+import router from '@/router'
+import { useAuthStore } from '@/stores/auth'
+import { refreshTokenApi } from '@/apis/user' 
 export const timeout = 50000
 let isRefreshing = false
 let requestQueue: ((newAccessToken: string) => void)[] = []
@@ -10,30 +13,25 @@ export const serverApi = axios.create({
     timeout,
 })
 
-serverApi.interceptors.response.use(
-    (res: AxiosResponse) => res.data,
-    (error: AxiosError) => {
-        if (error.code === 'ERR_NETWORK') {
-            ElMessage.error('网络连接失败,请重试')
-            return Promise.reject(error)
-        }
-        if (error.response?.status === 401) {
-            localStorage.removeItem('auth')
-            window.dispatchEvent(new CustomEvent('auth:unauthorized'))
-        }
-        return Promise.reject(error)
+const readAccessToken = () => {
+    const authRaw = localStorage.getItem('auth')
+    if (!authRaw) return ''
+    try {
+        const parsed = JSON.parse(authRaw)
+        if (typeof parsed?.user?.token?.accessToken === 'string') return parsed.user.token.accessToken
+        if (typeof parsed?.token?.accessToken === 'string') return parsed.token.accessToken
+        if (typeof parsed?.token === 'string') return parsed.token
+        if (typeof parsed?.accessToken === 'string') return parsed.accessToken
+        return ''
+    } catch {
+        return ''
     }
-)
+}
 
 serverApi.interceptors.request.use((config) => {
-    const authRaw = localStorage.getItem('auth')
-    if (authRaw) {
-        try {
-            const parsed = JSON.parse(authRaw)
-            if (parsed.token) {
-                config.headers.Authorization = `Bearer ${parsed.token}`
-            }
-        } catch {}
+    const accessToken = readAccessToken()
+    if (accessToken) {
+        config.headers.Authorization = `Bearer ${accessToken}`
     }
     return config
 })
@@ -46,6 +44,7 @@ serverApi.interceptors.response.use(
         }
 
         const authStore = useAuthStore()
+        authStore.restoreFromStorage()
         const accessToken = authStore.getAccessToken
         const refreshToken = authStore.getRefreshToken
         const originalRequest = error.config as any
@@ -95,6 +94,13 @@ export const aiApi = axios.create({
     timeout,
 })
 
+aiApi.interceptors.request.use((config) => {
+    const accessToken = readAccessToken()
+    if (accessToken) {
+        config.headers.Authorization = `Bearer ${accessToken}`
+    }
+    return config
+})
 aiApi.interceptors.response.use(
     (res: AxiosResponse) => res.data,
     (error: AxiosError) => {
@@ -106,9 +112,6 @@ aiApi.interceptors.response.use(
         return Promise.reject(error)
     }
 )
-aiApi.interceptors.response.use(res=>{
-    return res.data
-})
 export const avatarUrl = '/api/v1'
 export interface Response<T = any> {
     timestamp: string

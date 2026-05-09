@@ -1,6 +1,6 @@
 import { serverApi } from '..'
 import type { Response } from '..'
-import type { AvatarResult, UserUpdate } from '@en/common/user'
+import type { AvatarResult, Token, UserUpdate } from '@en/common/user'
 
 export interface UserInfo {
   id: string
@@ -37,6 +37,12 @@ export interface UpdateProfileParams {
     avatar?: string
 }
 
+export interface AuthResult extends Partial<UserInfo> {
+  user?: UserInfo
+  token: Token | string
+  refreshToken?: string
+}
+
 export const registerApi = (data: RegisterParams) => {
   return serverApi.post<any, Response<AuthResult>>('/user/register', data)
 }
@@ -51,4 +57,8 @@ export const uploadAvatar = (data: FormData) => {
 
 export const updateUser = (data: UserUpdate) => {
   return serverApi.post<any, Response<UserUpdate>>('/user/update-user', data)
+}
+
+export const refreshTokenApi = (data: { refreshToken: string }) => {
+  return serverApi.post<any, Response<{ accessToken: string; refreshToken: string }>>('/user/refresh-token', data)
 }

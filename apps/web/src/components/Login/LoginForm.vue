@@ -70,6 +70,7 @@ const handleLogin = async () => {
         }
     } catch (error: any) {
         ElMessage.error(error?.response?.data?.message || '登录失败，请重试')
+        console.log(error)
     } finally {
         loading.value = false
     }

@@ -7,6 +7,7 @@ import { WordBookModule } from './word-book/word-book.module';
  import { ConfigModule } from '@nestjs/config';
  import {MinioModule} from '@libs/shared/minio/minio.module';
 import { TrackerModule } from './tracker/tracker.module';
+import { AuthModule } from './auth/auth.module';
 @Module({
   imports: [UserModule, AuthModule, SharedModule, WordBookModule, TrackerModule,
      ConfigModule.forRoot({
