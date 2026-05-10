@@ -12,6 +12,8 @@ import * as bcrypt from 'bcryptjs';
 import { Prisma } from '@libs/shared/generated/prisma/client';
 import type { RefreshTokenPayload, UserLogin, UserRegister, UserUpdate, Token, AvatarResult } from '@en/common/user';
 import { ConfigService } from '@nestjs/config';
+import { userSelect } from './user.select';
+
 @Injectable()
 export class UserService {
   constructor(
@@ -22,64 +24,6 @@ export class UserService {
     private readonly configService: ConfigService,
     private readonly authService: AuthService,
   ) {}
-
- 
-
-  async findAll() {
-    const test = await this.prisma.user.findMany();
-    return this.response.success(test);
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
-
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} user`;
-  }
-
-  async profile(userId: string) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    if (!user) {
-      throw new UnauthorizedException('用户不存在');
-    }
-    const { password: _, ...result } = user;
-    return this.response.success(result);
-  }
-
-  async updateProfile(userId: string, dto: UpdateProfileDto) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    if (!user) {
-      throw new UnauthorizedException('用户不存在');
-    }
-    const updated = await this.prisma.user.update({
-      where: { id: userId },
-      data: dto,
-    });
-    const { password: _, ...result } = updated;
-    return this.response.success(result);
-  }
-
-  async changePassword(userId: string, dto: ChangePasswordDto) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    if (!user) {
-      throw new UnauthorizedException('用户不存在');
-    }
-    const isPasswordValid = await bcrypt.compare(dto.oldPassword, user.password);
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('原密码不正确');
-    }
-    const hashedPassword = await bcrypt.hash(dto.newPassword, 10);
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { password: hashedPassword },
-    });
-    return this.response.success(null);
-  }
 
   async login(dto: UserLogin) {
     const user = await this.prisma.user.findUnique({ where: { phone: dto.phone } });
@@ -118,7 +62,7 @@ export class UserService {
       throw error;
     }
   }
-           
+
   async refreshToken(dto: Omit<Token, 'accessToken'>) {
     try {
       const payload = this.jwtService.verify<RefreshTokenPayload>(dto.refreshToken);
@@ -133,6 +77,64 @@ export class UserService {
     } catch {
       throw new UnauthorizedException('refreshToken无效或已过期');
     }
+  }
+
+  async findAll() {
+    const test = await this.prisma.user.findMany({ select: userSelect });
+    return this.response.success(test);
+  }
+
+  findOne(id: number) {
+    return `This action returns a #${id} user`;
+  }
+
+  update(id: number, updateUserDto: UpdateUserDto) {
+    return `This action updates a #${id} user`;
+  }
+
+  remove(id: number) {
+    return `This action removes a #${id} user`;
+  }
+
+  async profile(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: userSelect,
+    });
+    if (!user) {
+      throw new UnauthorizedException('用户不存在');
+    }
+    return this.response.success(user);
+  }
+
+  async updateProfile(userId: string, dto: UpdateProfileDto) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new UnauthorizedException('用户不存在');
+    }
+    const updated = await this.prisma.user.update({
+      where: { id: userId },
+      data: dto,
+      select: userSelect,
+    });
+    return this.response.success(updated);
+  }
+
+  async changePassword(userId: string, dto: ChangePasswordDto) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new UnauthorizedException('用户不存在');
+    }
+    const isPasswordValid = await bcrypt.compare(dto.oldPassword, user.password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('原密码不正确');
+    }
+    const hashedPassword = await bcrypt.hash(dto.newPassword, 10);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword },
+    });
+    return this.response.success(null);
   }
 
   async uploadAvatar(file: Express.Multer.File) {

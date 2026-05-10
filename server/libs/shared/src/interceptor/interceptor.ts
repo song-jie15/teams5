@@ -1,7 +1,6 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { map, Observable } from 'rxjs';
 
-// 将bigint转换为字符串，并保留日期类型不变
 const transformBigInt = (obj: any) => {
   if (typeof obj === 'bigint') {
     return obj.toString();
@@ -27,13 +26,14 @@ export class InterceptorInterceptor implements NestInterceptor {
     const request = ctx.getRequest()
     return next.handle().pipe(
       map((data) => {
+        const ok = data?.success !== false
         return {
           timestamp: new Date().toISOString(),
           path: request.url,
-          message: data?.message || '请求成功',
-          code: data?.code || 200,
-          success: true,
-          data: transformBigInt(data?.data) ?? null
+          message: data?.message || (ok ? '请求成功' : '请求失败'),
+          code: data?.code || (ok ? 200 : 500),
+          success: ok,
+          data: ok ? (transformBigInt(data?.data) ?? null) : null
         }
       })
     )

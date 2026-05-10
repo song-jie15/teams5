@@ -1,6 +1,6 @@
 import { serverApi } from '..'
 import type { Response } from '..'
-import type { AvatarResult, Token, UserUpdate } from '@en/common/user'
+import type { AvatarResult, ResultUser, Token, UserUpdate } from '@en/common/user'
 
 export interface UserInfo {
   id: string
@@ -62,3 +62,12 @@ export const updateUser = (data: UserUpdate) => {
 export const refreshTokenApi = (data: { refreshToken: string }) => {
   return serverApi.post<any, Response<{ accessToken: string; refreshToken: string }>>('/user/refresh-token', data)
 }
+
+export const getProfileApi = () =>
+  serverApi.get<any, Response<ResultUser>>('/user/profile')
+
+export const updateProfileApi = (data: UpdateProfileParams) =>
+  serverApi.patch<any, Response<ResultUser>>('/user/profile', data)
+
+export const changePasswordApi = (data: ChangePasswordParams) =>
+  serverApi.post<any, Response<null>>('/user/change-password', data)

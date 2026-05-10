@@ -43,21 +43,23 @@ import { Sunny, Star, HomeFilled, Notebook, MagicStick, Reading, Setting } from 
 import { useRouter } from 'vue-router';
 import { watch, ref } from 'vue'
 import { useUserStore } from '@/stores/user';
+import { useAuthStore } from '@/stores/auth';
 import Profile from '../Profile/index.vue'
 import { useAvatar } from '@/hooks/useAvatar'
 import { useLogin } from '@/hooks/useLogin'
 
 const { login } = useLogin()
 const userStore = useUserStore()
+const authStore = useAuthStore()
 const router = useRouter()
 const currentPath = ref('')
 const { avatar } = useAvatar()
 const routes = [
-    { path: '/', name: '主页', icon: HomeFilled,isAuth: false },
-    { path: '/smart/chat', name: 'AI', icon: MagicStick,isAuth: true },
-    { path: '/word-book/index', name: '词库', icon: Notebook,isAuth: false },
-    { path: '/courses/index', name: '课程', icon: Reading,isAuth: false },
-    { path: '/setting/index', name: '设置', icon: Setting,isAuth: true },
+    { path: '/', name: '主页', icon: HomeFilled, isAuth: false },
+    { path: '/smart/chat', name: 'AI', icon: MagicStick, isAuth: true },
+    { path: '/word-book/index', name: '词库', icon: Notebook, isAuth: false },
+    { path: '/courses/index', name: '课程', icon: Reading, isAuth: false },
+    { path: '/setting/index', name: '设置', icon: Setting, isAuth: true },
 ]
 const isActive = (path: string) => {
     return currentPath.value === path ? 'bg-blue-200 text-blue-700' : 'text-gray-500 hover:bg-blue-200 hover:text-blue-700'
@@ -73,6 +75,9 @@ const gotoPath = async (path: string) => {
     if (isAuth && !userStore.getUser) {
         login()
         return
+    }
+    if (authStore.user) {
+        localStorage.setItem('auth', JSON.stringify({ user: authStore.user }))
     }
     router.push(path)
 }

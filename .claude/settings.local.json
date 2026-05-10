@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(xargs grep *)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(dir C:\\\\Users\\\\86159\\\\Desktop\\\\111\\\\teams5 *)",
+      "Bash(Get-ChildItem \"C:\\\\Users\\\\86159\\\\Desktop\\\\111\\\\teams5\" -Depth 0)",
+      "Bash(Select-Object Mode, Length, Name)",
+      "Bash(Sort-Object Name)"
     ]
   }
 }

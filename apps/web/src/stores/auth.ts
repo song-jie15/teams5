@@ -1,12 +1,29 @@
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
-import { loginApi, registerApi, type LoginParams, type RegisterParams, type UserInfo } from '@/apis/user'
+import { loginApi, registerApi, updateProfileApi, changePasswordApi, getProfileApi, type LoginParams, type RegisterParams, type UpdateProfileParams, type ChangePasswordParams, type AuthResult } from '@/apis/user'
 import { useUserStore } from '@/stores/user'
 import type { Token, WebResultUser } from '@en/common/user'
 
 type LoginPayload =
   | (UserInfo & { token: Token | string; refreshToken?: string })
   | { user: UserInfo; token: Token | string; refreshToken?: string }
+
+interface UserInfo {
+  id: string
+  name: string
+  phone: string
+  email?: string | null
+  address?: string | null
+  avatar?: string | null
+  bio?: string | null
+  isTimingTask: boolean
+  timingTaskTime: string
+  wordNumber: number
+  dayNumber: number
+  createdAt: string
+  updatedAt: string
+  lastLoginAt?: string | null
+}
 
 const normalizeToken = (token: Token | string, refreshToken?: string): Token => {
   if (typeof token === 'string') {
@@ -33,66 +50,84 @@ const normalizeUser = (payload: LoginPayload): WebResultUser => {
   } as unknown as WebResultUser
 }
 
-export const useAuthStore = defineStore(
-  'auth',
-  () => {
-    const user = ref<WebResultUser | null>(null)
+export const useAuthStore = defineStore('auth', () => {
+  const user = ref<WebResultUser | null>(null)
 
-    const getAccessToken = computed(() => user.value?.token.accessToken)
-    const getRefreshToken = computed(() => user.value?.token.refreshToken)
+  const getAccessToken = computed(() => user.value?.token.accessToken)
+  const getRefreshToken = computed(() => user.value?.token.refreshToken)
 
-    const persistAuth = (nextUser: WebResultUser) => {
-      user.value = nextUser
-      useUserStore().setUser(nextUser)
-      localStorage.setItem('auth', JSON.stringify({ user: nextUser }))
-    }
+  const persistAuth = (nextUser: WebResultUser) => {
+    user.value = nextUser
+    useUserStore().setUser(nextUser)
+    localStorage.setItem('auth', JSON.stringify({ user: nextUser }))
+  }
 
-    const updateToken = (newToken: Token) => {
-      if (!user.value) return
-      user.value.token = newToken
+  const updateToken = (newToken: Token) => {
+    if (!user.value) return
+    user.value.token = newToken
+    useUserStore().setUser(user.value)
+    localStorage.setItem('auth', JSON.stringify({ user: user.value }))
+  }
+
+  async function login(params: LoginParams) {
+    const res = await loginApi(params)
+    persistAuth(normalizeUser(res.data as LoginPayload))
+  }
+
+  async function register(params: RegisterParams) {
+    const res = await registerApi(params)
+    persistAuth(normalizeUser(res.data as LoginPayload))
+  }
+
+  async function fetchProfile() {
+    const res = await getProfileApi()
+    if (res.success && user.value) {
+      Object.assign(user.value, res.data)
       useUserStore().setUser(user.value)
       localStorage.setItem('auth', JSON.stringify({ user: user.value }))
     }
+  }
 
-    async function login(params: LoginParams) {
-      const res = await loginApi(params)
-      persistAuth(normalizeUser(res.data as LoginPayload))
+  async function updateProfile(params: UpdateProfileParams) {
+    const res = await updateProfileApi(params)
+    if (res.success && user.value) {
+      Object.assign(user.value, res.data)
+      useUserStore().setUser(user.value)
+      localStorage.setItem('auth', JSON.stringify({ user: user.value }))
     }
+  }
 
-    async function register(params: RegisterParams) {
-      const res = await registerApi(params)
-      persistAuth(normalizeUser(res.data as LoginPayload))
+  async function changePassword(params: ChangePasswordParams) {
+    await changePasswordApi(params)
+  }
+
+  function restoreFromStorage() {
+    if (user.value) {
+      useUserStore().setUser(user.value)
+      return
     }
-
-    function restoreFromStorage() {
-      if (user.value) {
-        useUserStore().setUser(user.value)
-        return
+    const authRaw = localStorage.getItem('auth')
+    if (!authRaw) return
+    try {
+      const parsed = JSON.parse(authRaw)
+      const storedUser = parsed?.user
+      if (storedUser?.token?.accessToken) {
+        user.value = storedUser
+        useUserStore().setUser(storedUser)
       }
-      const authRaw = localStorage.getItem('auth')
-      if (!authRaw) return
-      try {
-        const parsed = JSON.parse(authRaw)
-        const storedUser = parsed?.user
-        if (storedUser?.token?.accessToken) {
-          user.value = storedUser
-          useUserStore().setUser(storedUser)
-        }
-      } catch {
-        localStorage.removeItem('auth')
-      }
-    }
-
-    function logout() {
-      user.value = null
-      useUserStore().logout()
+    } catch {
       localStorage.removeItem('auth')
-      localStorage.removeItem('user')
     }
+  }
 
-    return { user, getAccessToken, getRefreshToken, updateToken, register, login, restoreFromStorage, logout }
-  },
-  {
-    persist: true,
-  },
-)
+  function logout() {
+    user.value = null
+    useUserStore().logout()
+    localStorage.removeItem('auth')
+    localStorage.removeItem('user')
+  }
+
+  return { user, getAccessToken, getRefreshToken, updateToken, register, login, fetchProfile, updateProfile, changePassword, restoreFromStorage, logout }
+}, {
+  persist: true,
+})

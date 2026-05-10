@@ -3,7 +3,7 @@ import type { AxiosResponse, AxiosError } from 'axios'
 import { ElMessage } from 'element-plus'
 import router from '@/router'
 import { useAuthStore } from '@/stores/auth'
-import { refreshTokenApi } from '@/apis/user' 
+import { refreshTokenApi } from '@/apis/auth' 
 export const timeout = 50000
 let isRefreshing = false
 let requestQueue: ((newAccessToken: string) => void)[] = []
