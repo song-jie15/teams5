@@ -5,28 +5,28 @@
                 class="text-2xl font-bold bg-indigo-700 text-white rounded-[10px] px-2 py-1 w-10 flex items-center justify-center h-10 ">
                 E</div>
             <div class="text-2xl font-bold">English App</div>
-            <div @click="router.push('/')"
+            <div @click="navigateTo('/')"
                 class="flex items-center gap-2 cursor-pointer rounded-[10px] px-2 py-1 text-gray-500">
                 <el-icon>
                     <HomeFilled />
                 </el-icon> <span>主页</span>
             </div>
-            <div @click="router.push('/smart/chat')" class="flex items-center gap-2 cursor-pointer text-gray-500">
+            <div @click="navigateTo('/smart/chat')" class="flex items-center gap-2 cursor-pointer text-gray-500">
                 <el-icon>
                     <MagicStick />
                 </el-icon> <span>AI</span>
             </div>
-            <div @click="router.push('/word-book/index')" class="flex items-center gap-2 cursor-pointer text-gray-500">
+            <div @click="navigateTo('/word-book/index')" class="flex items-center gap-2 cursor-pointer text-gray-500">
                 <el-icon>
                     <Notebook />
                 </el-icon> <span>词库</span>
             </div>
-            <div @click="router.push('/courses/index')" class="flex items-center gap-2 cursor-pointer text-gray-500">
+            <div @click="navigateTo('/courses/index')" class="flex items-center gap-2 cursor-pointer text-gray-500">
                 <el-icon>
                     <Reading />
                 </el-icon> <span>课程</span>
             </div>
-            <div @click="router.push('/setting/index')" class="flex items-center gap-2 cursor-pointer text-gray-500">
+            <div @click="navigateTo('/setting/index')" class="flex items-center gap-2 cursor-pointer text-gray-500">
                 <el-icon>
                     <Setting />
                 </el-icon> <span>设置</span>
@@ -72,11 +72,18 @@ const router = useRouter()
 const authStore = useAuthStore()
 const { login: showLogin } = useLogin()
 
+const navigateTo = (path: string) => {
+    if (authStore.user) {
+        localStorage.setItem('auth', JSON.stringify({ user: authStore.user }))
+    }
+    router.push(path)
+}
+
 const handleUserCommand = (command: string) => {
     if (command === 'profile') {
-        router.push('/setting/index')
+        navigateTo('/setting/index')
     } else if (command === 'setting') {
-        router.push('/setting/index')
+        navigateTo('/setting/index')
     } else if (command === 'logout') {
         ElMessageBox.confirm('确定要退出登录吗？', '提示', {
             confirmButtonText: '确定',

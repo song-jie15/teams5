@@ -13,6 +13,13 @@ export const serverApi = axios.create({
     timeout,
 })
 
+export const publicApi = axios.create({
+    baseURL: '/api/v1',
+    timeout,
+})
+
+publicApi.interceptors.response.use(res => res.data)
+
 serverApi.interceptors.request.use(config => {
     const authStore = useAuthStore()
     const accessToken = authStore.getAccessToken

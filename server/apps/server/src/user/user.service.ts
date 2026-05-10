@@ -10,6 +10,7 @@ import { AuthService } from '../auth/auth.service';
 import * as bcrypt from 'bcryptjs';
 import { Prisma } from '@libs/shared/generated/prisma/client';
 import type { Token, RefreshTokenPayload } from '@en/common/user';
+import { userSelect } from './user.select';
 
 @Injectable()
 export class UserService {
@@ -26,10 +27,10 @@ export class UserService {
     try {
       const user = await this.prisma.user.create({
         data: { ...rest, password: hashedPassword },
+        select: userSelect,
       });
       const token = this.authService.generateToken({ userId: user.id, name: user.name, email: user.email });
-      const { password: _, ...result } = user;
-      return this.response.success({ ...result, token });
+      return this.response.success({ ...user, token });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
         const target = (error.meta?.target as string[])?.[0];
@@ -44,23 +45,26 @@ export class UserService {
     try {
       const decoded = this.jwtService.verify<RefreshTokenPayload>(refreshToken);
       if (decoded.tokenType !== 'refresh') {
-        return this.response.error(null, 'refreshToken已过期或无效');
+        throw new UnauthorizedException('refreshToken已过期或无效');
       }
       const user = await this.prisma.user.findUnique({
         where: { id: decoded.userId },
       });
       if (!user) {
-        return this.response.error(null, '用户不存在');
+        throw new UnauthorizedException('用户不存在');
       }
       const token = this.authService.generateToken({ userId: user.id, name: user.name, email: user.email });
       return this.response.success(token);
-    } catch {
-      return this.response.error(null, 'refreshToken已过期或无效');
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      throw new UnauthorizedException('refreshToken已过期或无效');
     }
   }
 
   async findAll() {
-    const test = await this.prisma.user.findMany();
+    const test = await this.prisma.user.findMany({ select: userSelect });
     return this.response.success(test);
   }
 
@@ -77,12 +81,14 @@ export class UserService {
   }
 
   async profile(userId: string) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: userSelect,
+    });
     if (!user) {
       throw new UnauthorizedException('用户不存在');
     }
-    const { password: _, ...result } = user;
-    return this.response.success(result);
+    return this.response.success(user);
   }
 
   async updateProfile(userId: string, dto: UpdateProfileDto) {
@@ -93,9 +99,9 @@ export class UserService {
     const updated = await this.prisma.user.update({
       where: { id: userId },
       data: dto,
+      select: userSelect,
     });
-    const { password: _, ...result } = updated;
-    return this.response.success(result);
+    return this.response.success(updated);
   }
 
   async changePassword(userId: string, dto: ChangePasswordDto) {

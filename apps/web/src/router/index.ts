@@ -3,6 +3,8 @@ import home from './home/index'
 import wordBook from './word-book/index'
 import course from './course/index'
 import setting from './setting/index'
+import { isTokenExpired } from '@/utils/token'
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -13,24 +15,32 @@ const router = createRouter({
   ]
 })
 
+function getTokens(): { accessToken?: string; refreshToken?: string } {
+  try {
+    const raw = localStorage.getItem('auth')
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      const u = parsed?.user ?? null
+      if (u?.token?.accessToken) {
+        return { accessToken: u.token.accessToken, refreshToken: u.token.refreshToken }
+      }
+    }
+  } catch {}
+  return {}
+}
+
 router.beforeEach((to) => {
   if (to.meta.requiresAuth) {
-    const authRaw = localStorage.getItem('auth')
-    if (!authRaw) {
+    const { accessToken, refreshToken } = getTokens()
+
+    if (!accessToken || !refreshToken) {
       sessionStorage.setItem('redirectPath', to.fullPath)
       window.dispatchEvent(new CustomEvent('auth:login-required'))
       return { path: '/' }
     }
-    try {
-      const parsed = JSON.parse(authRaw)
-      const hasAccess = parsed?.user?.token?.accessToken || parsed?.token
-      if (!hasAccess) {
-        sessionStorage.setItem('redirectPath', to.fullPath)
-        window.dispatchEvent(new CustomEvent('auth:login-required'))
-        return { path: '/' }
-      }
-    } catch {
-      sessionStorage.setItem('redirectPath', to.fullPath)
+
+    if (isTokenExpired(refreshToken)) {
+      localStorage.removeItem('auth')
       window.dispatchEvent(new CustomEvent('auth:login-required'))
       return { path: '/' }
     }

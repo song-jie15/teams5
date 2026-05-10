@@ -1,4 +1,4 @@
-import { serverApi } from '..'
+import { serverApi, publicApi } from '..'
 import type { Response } from '..'
 import type { WebResultUser, ResultUser } from '@en/common/user'
 
@@ -26,10 +26,10 @@ export interface ChangePasswordParams {
 }
 
 export const registerApi = (data: RegisterParams) =>
-    serverApi.post<any, Response<WebResultUser>>('/user/register', data)
+    publicApi.post<any, Response<WebResultUser>>('/user/register', data)
 
 export const loginApi = (data: LoginParams) =>
-    serverApi.post<any, Response<WebResultUser>>('/auth/login', data)
+    publicApi.post<any, Response<WebResultUser>>('/auth/login', data)
 
 export const getProfileApi = () =>
     serverApi.get<any, Response<ResultUser>>('/user/profile')
